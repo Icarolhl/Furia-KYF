@@ -139,7 +139,7 @@ npm install
 3. **Configurar variáveis de ambiente**
    - **Google OAuth**: crie projeto em [Google Cloud Console](https://console.cloud.google.com), ative OAuth2 e obtenha CLIENT_ID e SECRET
    - **Discord OAuth**: registre sua aplicação em [Discord Developer Portal](https://discord.com/developers), copie CLIENT_ID e SECRET
-   - **Supabase**: crie conta em [Supabase](https://supabase.com), gere URL e ANON_KEY
+   - **Supabase**: crie conta em [Supabase](https://supabase.com), gere URL,ANON_KEY e SERVICE_ROLE_KEY
    - **OpenRouter**: crie conta em [OpenRouter](https://openrouter.ai), obtenha API_KEY
    - **NextAuth**: defina NEXTAUTH_SECRET e NEXTAUTH_URL
 
