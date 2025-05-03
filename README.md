@@ -38,30 +38,55 @@ com análise automatizada.
 ```
 src/
 ├── app/
-│   ├── layout.tsx             # Layout principal e metadata
-│   ├── page.tsx               # Página inicial
-│   ├── connect/page.tsx       # Login via Discord/Google
-│   ├── register/page.tsx      # Registro multietapas
-│   └── admin/
-│       ├── page.tsx           # Dashboard de admin
-│       └── fan/[id]/page.tsx  # Detalhes de fã
-├── components/ui/
-│   ├── StatusPopup.tsx        # Popups de status
-│   └── Toast.tsx              # Toasts de feedback
-├── context/ToastContext.tsx   # Provedor global de toasts
-├── features/register/components/
-│   ├── StepPersonal.tsx       # Etapa 1 do registro
-│   ├── StepFanProfile.tsx     # Etapa 2 do registro
-│   └── StepDocumentUpload.tsx # Etapa 3 do registro
-├── lib/auth.ts                # Configura NextAuth
-├── hooks/useIsAdmin.ts        # Hook para verificar admin
-├── pages/api/
-│   ├── analyze.ts             # Endpoint de análise de links
-│   └── register.ts            # Endpoint de registro de fã
-└── styles/globals.css         # Estilos globais
-
+│   ├── layout.tsx                 # Layout global da aplicação
+│   ├── page.tsx                   # Página inicial
+│   ├── connect/
+│   │   └── page.tsx               # Login via Discord/Google
+│   ├── register/
+│   │   └── page.tsx               # Registro multietapas
+│   ├── admin/
+│   │   ├── page.tsx               # Dashboard de admin
+│   │   └── fan/
+│   │       └── [id]/
+│   │           └── page.tsx       # Detalhes individuais do fã
+│   └── api/
+│       ├── admin/
+│       │   └── fans/
+│       │       └── route.ts       # Retorna lista de fãs para admin
+│       ├── link/
+│       │   └── analyze/
+│       │       └── route.ts       # Endpoint de análise de links
+│       ├── register/
+│       │   └── route.ts           # Endpoint de registro de fã
+│       └── social/
+│           └── guilds/
+│               └── route.ts       # Retorna guilds do Discord do usuário
+├── components/
+│   └── ui/
+│       ├── StatusPopup.tsx        # Popups de feedback
+│       ├── StyledSelect.tsx       # Select estilizado
+│       └── Toast.tsx              # Toasts globais
+├── context/
+│   └── ToastContext.tsx           # Provedor de toasts (context API)
+├── features/
+│   ├── admin/
+│   │   └── components/
+│   │       └── FanLinkAnalyzer.tsx # Componente de análise de link
+│   └── register/
+│       └── components/
+│           ├── StepPersonal.tsx    # Etapa 1: dados pessoais
+│           ├── StepFanProfile.tsx  # Etapa 2: perfil de fã
+│           └── StepDocumentUpload.tsx # Etapa 3: envio de documento
+├── hooks/
+│   └── useIsAdmin.ts              # Hook para verificar se usuário é admin
+├── lib/
+│   ├── ai.ts                      # Função que chama a IA para classificar relevância
+│   └── auth.ts                    # Configuração do NextAuth
+├── styles/
+│   └── globals.css                # Estilo global da aplicação
 public/
-└── favicon.ico                # Ícone da aplicação
+└── favicon.ico                    # Favicon da aplicação
+
 ```
 
 ---
@@ -90,18 +115,25 @@ public/
 
 ---
 
-## 🔄 Análise de Links
+🔄 Análise de Relevância de Links
 
-```ts
-POST /api/analyze
-Body: { url: string }
-Resposta: { relevance: number } // score de 0 a 100
-```
+A aplicação utiliza o modelo GPT-3.5 Turbo para avaliar automaticamente a
+relevância de páginas externas (como perfis de Steam, GamersClub, etc.) com base
+nas informações armazenadas no perfil do fã (interesses, atividades e histórico).
 
-- 🔴 0–29  → Irrelevante
-- 🟠 30–59 → Pouco relacionado
-- 🟡 60–84 → Relevante
-- 🟢 85–100→ Muito relevante
+Cada link analisado recebe uma pontuação de 0 a 100, de acordo com o grau de
+aderência ao perfil do usuário:
+
+🔴 0–29 — Irrelevante
+
+🟠 30–59 — Pouco relacionado
+
+🟡 60–84 — Relevante
+
+🟢 85–100 — Muito relevante
+
+Essa análise é exibida visualmente na interface de administração, facilitando
+decisões rápidas sobre engajamento e afinidade de conteúdo.
 
 ---
 
