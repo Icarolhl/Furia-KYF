@@ -21,7 +21,13 @@ export default async function AdminDashboard() {
     redirect('/403')
   }
 
-  const res = await fetch('/api/admin/fans', { cache: 'no-store' })
+  const rawBaseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+  const baseUrl = rawBaseUrl.replace(/\/admin\/?$/, '')
+
+  const res = await fetch(`${baseUrl}/api/admin/fans`, {
+    cache: 'no-store'
+  })
+
   const json = await res.json()
   const fans: Fan[] = json.data || []
 
