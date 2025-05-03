@@ -129,7 +129,7 @@ Resposta: { relevance: number } // score de 0 a 100
 
 1. **Clone o repositório**
 ```bash
-git clone https://github.com/seu-usuario/furia-kyf.git
+git clone https://github.com/Icarolhl/furia-kyf.git
 cd furia-kyf
 ```
 2. **Instale dependências**
