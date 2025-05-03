@@ -16,18 +16,12 @@ export default async function AdminDashboard() {
   const session = await getServerSession(authOptions)
   const allowed = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',') || []
   const email = session?.user?.email
+
   if (!session || !email || !allowed.includes(email)) {
     redirect('/403')
   }
 
-  const baseUrl = process.env.VERCEL_URL
-    ? `https://${process.env.VERCEL_URL}`
-    : 'http://localhost:3000'
-
-  const res = await fetch(`${baseUrl}/api/admin/fans`, {
-    cache: 'no-store',
-    credentials: 'include'
-  })
+  const res = await fetch('/api/admin/fans', { cache: 'no-store' })
   const json = await res.json()
   const fans: Fan[] = json.data || []
 
