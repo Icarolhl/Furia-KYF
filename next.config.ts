@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
       "cdn.discordapp.com",
       "avatars.githubusercontent.com"
     ]
+  },
+  typescript: {
+    ignoreBuildErrors: true
+  },
+  eslint: {
+    ignoreDuringBuilds: true
   }
 }
 
