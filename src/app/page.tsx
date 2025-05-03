@@ -58,7 +58,7 @@ export default function LandingPage() {
         </motion.a>
 
         <motion.a
-          href="https://github.com/seu-usuario/seu-repo"
+          href="https://github.com/Icarolhl/Furia-KYF"
           target="_blank"
           rel="noopener noreferrer"
           whileHover={{ scale: 1.05 }}
