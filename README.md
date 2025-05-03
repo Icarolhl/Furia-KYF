@@ -133,7 +133,7 @@ git clone https://github.com/seu-usuario/furia-kyf.git
 cd furia-kyf
 ```
 2. **Instale dependências**
-   ```bash
+```bash
 npm install
 ```
 3. **Configurar variáveis de ambiente**
@@ -144,7 +144,7 @@ npm install
    - **NextAuth**: defina NEXTAUTH_SECRET e NEXTAUTH_URL
 
 4. **Arquivo `.env.local`**
-   ```env
+```env
 NEXTAUTH_SECRET=...
 NEXTAUTH_URL=...
 GOOGLE_CLIENT_ID=...
@@ -159,7 +159,7 @@ NEXT_PUBLIC_ADMIN_EMAILS=exemplo@exemplo.com,exemplo2@exemplo.com
 ```
 
 5. **Execute localmente**
-   ```bash
+```bash
 npm run dev
 ```
 
