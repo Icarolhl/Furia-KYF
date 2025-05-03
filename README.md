@@ -128,12 +128,12 @@ Resposta: { relevance: number } // score de 0 a 100
 ## ⚙️ Instalação e Configuração
 
 1. **Clone o repositório**
-   ```bash
-git clone https://github.com/seu-usuario/furia-kyf.git
+```bash
+git clone https://github.com/Icarolhl/furia-kyf.git
 cd furia-kyf
 ```
 2. **Instale dependências**
-   ```bash
+```bash
 npm install
 ```
 3. **Configurar variáveis de ambiente**
@@ -144,7 +144,7 @@ npm install
    - **NextAuth**: defina NEXTAUTH_SECRET e NEXTAUTH_URL
 
 4. **Arquivo `.env.local`**
-   ```env
+```env
 NEXTAUTH_SECRET=...
 NEXTAUTH_URL=...
 GOOGLE_CLIENT_ID=...
@@ -159,7 +159,7 @@ NEXT_PUBLIC_ADMIN_EMAILS=exemplo@exemplo.com,exemplo2@exemplo.com
 ```
 
 5. **Execute localmente**
-   ```bash
+```bash
 npm run dev
 ```
 
@@ -169,9 +169,12 @@ Acesse em: http://localhost:3000
 
 ## 📌 Observações
 
-> Este projeto é público para avaliação técnica e não se destina à produção. 
+> Este projeto é público para avaliação técnica e não se destina à produção.
+
 > Substitua todas as credenciais antes do uso em ambiente real.
-> Todos os direitos sobre a marca FURIA são reservados à organização.> Este projeto foi desenvolvido como parte de um desafio técnico para a equipe **FURIA Esports**.  
+
+> Este projeto foi desenvolvido como parte de um desafio técnico para a equipe **FURIA Esports**.
+
 > Todos os direitos sobre a marca FURIA são reservados à organização.
 
 
