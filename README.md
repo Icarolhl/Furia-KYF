@@ -169,9 +169,12 @@ Acesse em: http://localhost:3000
 
 ## 📌 Observações
 
-> Este projeto é público para avaliação técnica e não se destina à produção. 
+> Este projeto é público para avaliação técnica e não se destina à produção.
+
 > Substitua todas as credenciais antes do uso em ambiente real.
-> Este projeto foi desenvolvido como parte de um desafio técnico para a equipe **FURIA Esports**. 
+
+> Este projeto foi desenvolvido como parte de um desafio técnico para a equipe **FURIA Esports**.
+
 > Todos os direitos sobre a marca FURIA são reservados à organização.
 
 
