@@ -11,6 +11,21 @@ import StepFanProfile from "@/features/register/components/StepFanProfile"
 import StepDocumentUpload from "@/features/register/components/StepDocumentUpload"
 import StatusPopup from "@/components/ui/StatusPopup"
 
+type FormValues = {
+  nome: string
+  cpf: string
+  estado: string
+  cidade: string
+  endereco: string
+  interesses: string[]
+  atividades: string[]
+  eventos_participados: string[]
+  compras_relacionadas: string[]
+  documentImage: { path: string } | null
+  documentText: string
+  documentValidado: boolean
+}
+
 export default function RegisterPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
@@ -18,7 +33,7 @@ export default function RegisterPage() {
   const [showPopup, setShowPopup] = useState(false)
   const [errorPopup, setErrorPopup] = useState("")
 
-  const form = useForm({
+  const form = useForm<FormValues>({
     defaultValues: {
       nome: "",
       cpf: "",
@@ -36,17 +51,13 @@ export default function RegisterPage() {
   })
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.replace("/connect")
-    }
+    if (status === "unauthenticated") router.replace("/connect")
   }, [status, router])
 
   useEffect(() => {
     if (!errorPopup) return
     const timer = setTimeout(() => {
-      if (errorPopup === "CPF já registrado.") {
-        router.push("/")
-      }
+      if (errorPopup === "CPF já registrado.") router.push("/")
       setErrorPopup("")
     }, 3000)
     return () => clearTimeout(timer)
@@ -65,33 +76,30 @@ export default function RegisterPage() {
     else router.push("/connect")
   }
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: FormValues) => {
     try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...data,
-          email: session?.user?.email || "",
-          interesses: data.interesses || [],
-          atividades: data.atividades || [],
-          eventos_participados: data.eventos_participados || [],
-          compras_relacionadas: data.compras_relacionadas || [],
-          documentImage: data.documentImage?.path ?? undefined
+          email: session?.user?.email ?? "",
+          documentImage: data.documentImage?.path
         })
       })
-
       const result = await res.json()
-
       if (!res.ok) {
-        setErrorPopup(result.error || "Erro ao enviar dados.")
+        setErrorPopup(result.error ?? "Erro ao enviar dados.")
         return
       }
-
       setShowPopup(true)
-    } catch (err) {
-      console.error("[ERRO GERAL]", err)
-      setErrorPopup("Erro inesperado. Tente novamente.")
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Erro inesperado. Tente novamente."
+      console.error("[ERRO GERAL]", message)
+      setErrorPopup(message)
     }
   }
 
@@ -100,19 +108,17 @@ export default function RegisterPage() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.4 }}
-      className="min-h-screen flex items-center justify-center px-4 
-        bg-zinc-950 text-white"
+      className="min-h-screen flex items-center justify-center px-4 bg-zinc-950 text-white"
       style={{
-        backgroundImage: `radial-gradient(
-          circle at 30% 30%, rgba(139, 92, 246, 0.15), transparent 40%
-        ), radial-gradient(
-          circle at 70% 70%, rgba(236, 72, 153, 0.12), transparent 40%
-        )`,
+        backgroundImage:
+          "radial-gradient(circle at 30% 30%, rgba(139,92,246,0.15), transparent 40%)," +
+          "radial-gradient(circle at 70% 70%, rgba(236,72,153,0.12), transparent 40%)",
         backgroundSize: "cover"
       }}
     >
-      <div className="w-full max-w-2xl p-8 rounded-2xl shadow-xl 
-        backdrop-blur-md bg-white/5 border border-white/10 space-y-6"
+      <div
+        className="w-full max-w-2xl p-8 rounded-2xl shadow-xl bg-white/5 backdrop-blur-md \
+          border border-white/10 space-y-6"
       >
         <h1 className="text-2xl font-bold text-center">
           Formulário de Registro
@@ -122,8 +128,7 @@ export default function RegisterPage() {
           show={showPopup}
           status="success"
           message="Registro enviado com sucesso!"
-          description="Obrigado por compartilhar seus dados. 
-            Você será redirecionado em instantes."
+          description="Obrigado por compartilhar seus dados. Você será redirecionado."
         />
 
         <StatusPopup
@@ -134,75 +139,71 @@ export default function RegisterPage() {
         />
 
         <FormProvider {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6"
+          >
             {step === 1 && <StepPersonal />}
             {step === 2 && <StepFanProfile />}
             {step === 3 && <StepDocumentUpload />}
 
             <div className="mt-8 flex flex-col gap-4">
-              {step < 3 && (
+              {step < 3 ? (
                 <div className="flex justify-between">
                   <motion.button
                     type="button"
                     onClick={handleBack}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="px-6 py-2 bg-black text-white 
-                      font-semibold rounded-full shadow 
-                      hover:bg-zinc-800 transition"
+                    className="px-6 py-2 bg-black text-white font-semibold \
+                      rounded-full shadow hover:bg-zinc-800 transition"
                   >
                     Voltar
                   </motion.button>
-
                   <motion.button
                     type="button"
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={async () => {
-                      const campos = step === 1
-                        ? [
-                            "nome",
-                            "cpf",
-                            "estado",
-                            "cidade",
-                            "endereco"
-                          ] as const
-                        : [] as const
+                      const campos =
+                        step === 1
+                          ? ([
+                              "nome",
+                              "cpf",
+                              "estado",
+                              "cidade",
+                              "endereco"
+                            ] as const)
+                          : ([] as const)
                       const isValid = await form.trigger(campos)
                       if (isValid) setStep(step + 1)
                     }}
-                    className="px-6 py-2 bg-gradient-to-r 
-                      from-fuchsia-600 to-pink-600 text-white 
-                      font-semibold rounded-full shadow 
+                    className="px-6 py-2 bg-gradient-to-r from-fuchsia-600 \
+                      to-pink-600 text-white font-semibold rounded-full shadow \
                       hover:brightness-110 transition"
                   >
                     Avançar
                   </motion.button>
                 </div>
-              )}
-
-              {step === 3 && (
+              ) : (
                 <div className="flex justify-between gap-4">
                   <motion.button
                     type="button"
                     onClick={handleBack}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="w-full px-6 py-2 bg-black text-white 
-                      font-semibold rounded-full shadow 
-                      hover:bg-zinc-800 transition"
+                    className="w-full px-6 py-2 bg-black text-white font-semibold \
+                      rounded-full shadow hover:bg-zinc-800 transition"
                   >
                     Voltar
                   </motion.button>
-
                   <motion.button
                     type="submit"
                     disabled={!form.watch("documentValidado")}
                     whileHover={{ scale: 1.03 }}
                     whileTap={{ scale: 0.97 }}
-                    className="w-full px-6 py-2 bg-green-600 text-white 
-                      font-semibold rounded-full shadow 
-                      disabled:opacity-50 transition"
+                    className="w-full px-6 py-2 bg-green-600 text-white font-semibold \
+                      rounded-full shadow disabled:opacity-50 transition"
                   >
                     Enviar
                   </motion.button>

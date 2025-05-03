@@ -1,7 +1,6 @@
 'use client'
 
-import React from 'react'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   Activity,
@@ -14,12 +13,18 @@ type Props = {
   fan: { id: string; nome: string }
 }
 
-const FanLinkAnalyzer: React.FC<Props> = ({ fan }) => {
-  const [url, setUrl] = useState('')
+type AnalyzeResponse = {
+  relevance: number
+  warning?: string
+  error?: string
+}
+
+export default function FanLinkAnalyzer({ fan }: Props) {
+  const [url, setUrl] = useState<string>('')
   const [score, setScore] = useState<number | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-  const [warning, setWarning] = useState('')
+  const [loading, setLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string>('')
+  const [warning, setWarning] = useState<string>('')
 
   const analyze = async () => {
     setLoading(true)
@@ -33,12 +38,15 @@ const FanLinkAnalyzer: React.FC<Props> = ({ fan }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ fanId: fan.id, url })
       })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Erro ao analisar link')
+      const data: AnalyzeResponse = await res.json()
+      if (!res.ok) {
+        throw new Error(data.error ?? 'Erro ao analisar link')
+      }
       setScore(data.relevance)
       if (data.warning) setWarning(data.warning)
-    } catch (err: any) {
-      setError(err.message)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err)
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -49,10 +57,7 @@ const FanLinkAnalyzer: React.FC<Props> = ({ fan }) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="
-        bg-white/5 backdrop-blur-md border border-white/10
-        rounded-2xl shadow-lg p-6 space-y-4
-      "
+      className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-6 space-y-4"
     >
       <h2 className="text-xl font-semibold text-white">
         Relevância de link para {fan.nome}
@@ -64,25 +69,14 @@ const FanLinkAnalyzer: React.FC<Props> = ({ fan }) => {
           placeholder="https://exemplo.com"
           value={url}
           onChange={e => setUrl(e.target.value)}
-          className="
-            flex-1 bg-zinc-900 text-white border border-zinc-700
-            px-4 py-2 rounded-md shadow-sm focus:outline-none
-            focus:ring-2 focus:ring-fuchsia-500
-          "
+          className="flex-1 bg-zinc-900 text-white border border-zinc-700 px-4 py-2 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-500"
         />
         <button
           onClick={analyze}
           disabled={!url || loading}
-          className="
-            inline-flex items-center space-x-2
-            bg-gradient-to-r from-fuchsia-600 to-pink-600
-            px-5 py-2 rounded-full font-semibold shadow
-            hover:brightness-110 transition-all disabled:opacity-50
-          "
+          className="inline-flex items-center space-x-2 bg-gradient-to-r from-fuchsia-600 to-pink-600 px-5 py-2 rounded-full font-semibold shadow hover:brightness-110 transition-all disabled:opacity-50"
         >
-          {loading
-            ? <Activity className="animate-spin" />
-            : <CheckCircle />}
+          {loading ? <Activity className="animate-spin" /> : <CheckCircle />}
           <span>{loading ? 'Analisando...' : 'Analisar'}</span>
         </button>
       </div>
@@ -90,11 +84,7 @@ const FanLinkAnalyzer: React.FC<Props> = ({ fan }) => {
       {score !== null && (
         <div className="flex items-center space-x-2 text-green-400">
           <CheckCircle />
-          <motion.span
-            initial={{ scale: 0.8 }}
-            animate={{ scale: 1 }}
-            className="font-medium"
-          >
+          <motion.span initial={{ scale: 0.8 }} animate={{ scale: 1 }} className="font-medium">
             Relevância estimada: {score}%
           </motion.span>
         </div>
@@ -116,5 +106,3 @@ const FanLinkAnalyzer: React.FC<Props> = ({ fan }) => {
     </motion.section>
   )
 }
-
-export default FanLinkAnalyzer

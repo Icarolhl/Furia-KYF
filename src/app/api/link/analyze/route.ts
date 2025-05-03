@@ -7,8 +7,20 @@ import { classifyTextRelevance } from "@/lib/ai"
 
 const bodySchema = z.object({
   fanId: z.string().uuid(),
-  url: z.string().url()
+  url: z.string().url(),
 })
+
+interface Fan {
+  id: string
+  nome: string
+  estado: string
+  cidade: string
+  interesses: string[]
+  atividades: string[]
+  eventos_participados: string[]
+  compras_relacionadas: string[]
+  guilds_discord: string[]
+}
 
 export async function POST(req: Request) {
   const supabase = createClient(
@@ -32,22 +44,21 @@ export async function POST(req: Request) {
       )
     }
 
-    const response = await fetch(url)
-    const html = await response.text()
+    const html = await fetch(url).then(res => res.text())
 
     const blockedPatterns = [
       "Just a moment...",
       "Access denied",
       "Cloudflare",
       "Checking your browser",
-      "Verification required"
+      "Verification required",
     ]
 
     if (blockedPatterns.some(pat => html.includes(pat))) {
       return new Response(
         JSON.stringify({
           relevance: 0,
-          warning: "Site protegido por bloqueadores"
+          warning: "Site protegido por bloqueadores",
         }),
         { status: 200 }
       )
@@ -81,9 +92,9 @@ export async function POST(req: Request) {
         atividades: fan.atividades,
         eventos_participados: fan.eventos_participados,
         compras_relacionadas: fan.compras_relacionadas,
-        guilds_discord: fan.guilds_discord
+        guilds_discord: fan.guilds_discord,
       },
-      pageContent: content
+      pageContent: content,
     })
 
     const relevance = await classifyTextRelevance(
@@ -94,9 +105,10 @@ export async function POST(req: Request) {
       JSON.stringify({ relevance }),
       { status: 200 }
     )
-  } catch (err: any) {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
     return new Response(
-      JSON.stringify({ error: err.message || "Erro interno" }),
+      JSON.stringify({ error: message }),
       { status: 500 }
     )
   }
