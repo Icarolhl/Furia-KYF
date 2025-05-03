@@ -3,6 +3,7 @@ export const runtime = "nodejs"
 import { createClient } from "@supabase/supabase-js"
 import { z } from "zod"
 import * as cheerio from "cheerio"
+import { classifyTextRelevance } from "@/lib/ai"
 
 const bodySchema = z.object({
   fanId: z.string().uuid(),
@@ -18,22 +19,21 @@ export async function POST(req: Request) {
   try {
     const { fanId, url } = bodySchema.parse(await req.json())
 
-    const fanRes = await supabase
+    const { data: fan, error: fanError } = await supabase
       .from("fans")
       .select("*")
       .eq("id", fanId)
       .single()
 
-    if (fanRes.error || !fanRes.data) {
-      return new Response(JSON.stringify({ error: "Fã não encontrado" }), {
-        status: 404
-      })
+    if (fanError || !fan) {
+      return new Response(
+        JSON.stringify({ error: "Fã não encontrado" }),
+        { status: 404 }
+      )
     }
 
-    const fan = fanRes.data
-
-    const page = await fetch(url)
-    const html = await page.text()
+    const response = await fetch(url)
+    const html = await response.text()
 
     const blockedPatterns = [
       "Just a moment...",
@@ -43,81 +43,60 @@ export async function POST(req: Request) {
       "Verification required"
     ]
 
-    const isBlocked = blockedPatterns.some((pattern) => html.includes(pattern))
-
-    if (isBlocked) {
-      return new Response(JSON.stringify({
-        relevance: 0,
-        warning: "O site parece estar protegido por bloqueadores (ex: Cloudflare)."
-      }), { status: 200 })
+    if (blockedPatterns.some(pat => html.includes(pat))) {
+      return new Response(
+        JSON.stringify({
+          relevance: 0,
+          warning: "Site protegido por bloqueadores"
+        }),
+        { status: 200 }
+      )
     }
 
     const $ = cheerio.load(html)
-
     const title = $("title").text()
     const description =
       $('meta[name="description"]').attr("content") ||
       $('meta[property="og:description"]').attr("content") || ""
-    const headings = $("h1,h2,h3").map((_, el) => $(el).text()).get().join(" | ")
-    const paragraphs = $("p").map((_, el) => $(el).text()).get().slice(0, 3).join(" ")
+    const headings = $("h1,h2,h3")
+      .map((_, el) => $(el).text())
+      .get()
+      .join(" | ")
+    const paragraphs = $("p")
+      .map((_, el) => $(el).text())
+      .get()
+      .slice(0, 3)
+      .join(" ")
 
     const content = [title, description, headings, paragraphs]
       .filter(Boolean)
       .join(" | ")
 
-    console.log("🔎 Conteúdo extraído para análise:", content)
-
-    const prompt = `
-Você é um sistema especialista em personalização de conteúdo para fãs de e-sports.
-
-Com base no perfil de um fã (incluindo interesses, atividades e histórico),
-avalie o quanto o conteúdo textual de uma página da web é relevante para ele.
-
-Retorne **apenas um JSON válido** com uma propriedade "score", onde:
-- 85–100 = Muito relevante
-- 60–84 = Relevante
-- 30–59 = Pouco relacionado
-- 0–29 = Irrelevante
-
-⚠️ Não adicione comentários, explicações ou formatação fora do JSON.
-
-Perfil do fã:
-- Nome: ${fan.nome}
-- Estado: ${fan.estado}
-- Cidade: ${fan.cidade}
-- Interesses: ${fan.interesses?.join(", ") || "Nenhum"}
-- Atividades: ${fan.atividades?.join(", ") || "Nenhuma"}
-- Eventos Participados: ${fan.eventos_participados?.join(", ") || "Nenhum"}
-- Compras Relacionadas: ${fan.compras_relacionadas?.join(", ") || "Nenhuma"}
-- Servidores do Discord: ${fan.guilds_discord?.join(", ") || "Nenhum"}
-
-Conteúdo extraído do link:
-"${content}"
-    `.trim()
-
-    const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`
+    const classificationInput = JSON.stringify({
+      fanProfile: {
+        nome: fan.nome,
+        estado: fan.estado,
+        cidade: fan.cidade,
+        interesses: fan.interesses,
+        atividades: fan.atividades,
+        eventos_participados: fan.eventos_participados,
+        compras_relacionadas: fan.compras_relacionadas,
+        guilds_discord: fan.guilds_discord
       },
-      body: JSON.stringify({
-        model: "openai/gpt-3.5-turbo",
-        temperature: 0.7,
-        messages: [{ role: "user", content: prompt }]
-      })
+      pageContent: content
     })
 
-    const aiJson = await aiRes.json()
-    const rawOutput = aiJson.choices?.[0]?.message?.content || ""
-    const match = rawOutput.match(/"score"\s*:\s*(\d{1,3})/)
-    const relevance = match ? Math.min(Number(match[1]), 100) : 0
+    const relevance = await classifyTextRelevance(
+      classificationInput
+    )
 
-    return new Response(JSON.stringify({ relevance }), { status: 200 })
-
+    return new Response(
+      JSON.stringify({ relevance }),
+      { status: 200 }
+    )
   } catch (err: any) {
     return new Response(
-      JSON.stringify({ error: err.message || "Erro interno no servidor" }),
+      JSON.stringify({ error: err.message || "Erro interno" }),
       { status: 500 }
     )
   }
