@@ -128,7 +128,7 @@ Resposta: { relevance: number } // score de 0 a 100
 ## ⚙️ Instalação e Configuração
 
 1. **Clone o repositório**
-   ```bash
+```bash
 git clone https://github.com/seu-usuario/furia-kyf.git
 cd furia-kyf
 ```
